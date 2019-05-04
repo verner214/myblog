@@ -1,0 +1,44 @@
+@media screen and (min-width: 48em) {
+    .wrap {max-width: 1240px;}
+    .has-sidebar #secondary {width: 24%}
+    :not(.error404).has-sidebar #primary 
+      {
+        
+        width: 70%
+      }
+   }
+   
+   @media screen and (min-width: 48em) {
+     #primary #post-9 .entry-header 
+       {
+         float: none;
+         width: inherit;
+       }
+     #primary #post-9 .entry-content 
+       {
+         float: none;
+         width: inherit;
+       }
+     #primary #post-9 .entry-content .alignleft
+       {
+         width: 300px;
+         float: none;
+         display: block;
+       }
+     #primary #post-9 .entry-content .alignleft img
+       {
+         display: block;
+       }
+   }
+   
+   @media screen and (max-width: 48em) {
+   .wrap {
+     padding-left: 1em;
+     padding-right: 1em;
+   }
+   pre {
+     padding: 0.5em;
+   }
+   }
+   
+   

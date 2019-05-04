@@ -4,10 +4,10 @@ copy header.html + /blog1/body.html + footer.html /blog1/index.html
 copy header.html + /blog2/body.html + footer.html /blog2/index.html
 
 --------- filer ------------
-/src/blog1/body.html
-/src/blog1/localimage1.jpg
-/src/blog1/localimage2.jpg
-/src/blog2/etc.
+/blog1/body.html
+/blog1/localimage1.jpg
+/blog1/localimage2.jpg
+/blog2/etc.
 /images/
 /js/
 /css/
