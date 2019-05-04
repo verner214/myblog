@@ -13,6 +13,8 @@ copy header.html + /blog2/body.html + footer.html /blog2/index.html
 /css/
 header.html
 footer.html
+about.html
+404.html
 
 --------------- output, laddas upp till molnet -------------
 /src/blog1/index.html -- .gitignore
@@ -23,7 +25,7 @@ my useful commands
 git add .  -- markerar alla ändringar och nya filer som med i staging
 git commit -m "obligatorisk kommentar" -- check init
 git push -u origin master -- skickar till github
-
+git clone https://github.com/verner214/myblog.git
 
 
 from start page after creating a new repository:
