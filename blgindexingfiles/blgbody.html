@@ -1,0 +1,129 @@
+<article id="post-120" class="post-120 post type-post status-publish format-standard hentry">
+    <header class="entry-header">
+        <div class="entry-meta">
+            <span class="posted-on">
+                <span class="screen-reader-text">Posted on</span> 
+                <time class="entry-date published" datetime="2018-10-17T21:59:33+02:00">October 17, 2018</time>
+            </span>
+        </div><!-- .entry-meta -->
+        <h1 class="entry-title">Indexing files in blocks with Episerver Find</h1>	
+    </header><!-- .entry-header -->
+
+
+    <div class="entry-content">
+        <p>By default Episerver Find indexes content before it is published. Although it is easy to avoid unpublished content from being served as search results, potentially secret information not yet available for the public is sent to the indexing service outside of the office. Therefore we decided not to allow documents being indexed before publication. We also needed the possibility to occasionally exclude pages and files from being indexed. Another demand was to exclude files from the search results if the files weren&#8217;t linked. </p>
+    <p>I have seen two solutions approaching similar problems, written by <a href="https://www.lindstromhenrik.com/indexing-only-referenced-vpp-files-with-episerver-find/">Henrik Lindström</a> and <a href="http://www.herlitz.nu/2017/01/24/index-only-linked-documents-using-episerver-find/">Erik Herlitz</a>. What my solution adds is the ability to index files linked from nested blocks.</p>
+    <p>Content types that implements the ISearchable interface, as shown below, allow an editor to optionally exclude content from being indexed.</p>
+    <pre><code>
+    public interface ISearchable
+    {
+      bool NotSearchable { get; set; }
+    }
+    
+    [ContentType]
+    public class GenericMedia : MediaData, ISearchable
+    {
+      public virtual bool NotSearchable { get; set; }
+    }
+    </code></pre>
+    <p>Callbacks are initialized in an <em>InitializableModule</em>. The callbacks will get executed either during full scheduled indexing or as a result of an event triggered by the CMS, such as a content being saved or published. To avoid endless recursion by cyclic references, there is a maximum depth (<em>level</em>) were the search for a containing page is terminated.</p>
+    <pre><code>
+    [InitializableModule]
+    [ModuleDependency(typeof(EPiServer.Web.InitializationModule))]
+    public class FindIndexFiltering : IInitializableModule
+    {
+      private readonly List<string> AcceptedFileExtensions = 
+        new List<string>() { "doc", "docx", "ppt", "pptx", "pdf", "xls", "xlsx" };
+    
+      public void Initialize(InitializationEngine context)
+      {
+        ContentIndexer.Instance.Conventions.ForInstancesOf<IContent>().ShouldIndex(x => false);
+        ContentIndexer.Instance.Conventions.ForInstancesOf<PageData>()
+          .ShouldIndex(ShouldIndexPagedata);
+        ContentIndexer.Instance.Conventions.ForInstancesOf<IContentMedia>()
+          .ShouldIndex(ShouldIndexContentMedia);
+      }
+    
+      private bool IndexContainingPage(ContentReference cr, string language, int level)
+      {
+        if (level > 8)
+        {
+          return false;
+        }
+    
+        var Repo = ServiceLocator.Current.GetInstance<IContentRepository>();
+        IContent Cont;
+        Repo.TryGet<IContent>(cr,  out Cont);
+        IVersionable Iv = Cont as IVersionable;
+    
+        if (Iv != null && !((Iv.StartPublish < DateTime.Now || Iv.StartPublish == null) &#038;&#038; 
+          (Iv.StopPublish > DateTime.Now || Iv.StopPublish == null)))
+        {
+          return false;
+        }
+    
+        var Page = Cont as PageData;
+        if (Page != null)
+        {
+          var i = Cont as ISearchable;
+          if (i != null && i.NotSearchable)
+          {
+            return false;
+          }
+          return true;
+        }
+    
+        var References = Repo.GetReferencesToContent(cr, false);
+        foreach (var Ref in References)
+        {
+          if ((Ref.ReferencedLanguage == null || Ref.ReferencedLanguage.Name == Ref.OwnerLanguage.Name) && 
+            IndexContainingPage(Ref.OwnerID, Ref.OwnerLanguage.Name, level + 1))
+          {
+            return true;
+          }
+        }
+        return false;
+      }
+    
+      private bool ShouldIndexContentMedia(IContentMedia file)
+      {
+        if (!AcceptedFileExtensions.Contains(file.SearchFileExtension().ToLowerInvariant()))
+        {
+          return false;
+        }
+    
+        var IS = file as ISearchable;
+        var NotSearchable = IS != null && IS.NotSearchable;
+        if (!NotSearchable && IndexContainingPage(file.ContentLink, null, 0))
+        {
+          return true;
+        }
+    
+        IEnumerable<DeleteResult> Result;
+        ContentIndexer.Instance.TryDelete(file, out Result);
+        return false;
+      }
+    
+      private bool ShouldIndexPagedata(PageData page)
+      {
+        var IS = page as ISearchable;
+        var NotSearchable = IS != null && IS.NotSearchable;
+        if (!NotSearchable && page.CheckPublishedStatus(PagePublishedStatus.Published))
+        {
+          return true;
+        }
+    
+        IEnumerable<DeleteResult> Result;
+        ContentIndexer.Instance.TryDelete(page, out Result);
+        return false;
+      }
+    
+      public void Uninitialize(InitializationEngine context)
+      {
+      }
+    }
+    </code></pre>
+    <p>A page or a block containing a link to a file will trigger the indexing callback and cause the file to be indexed whenever the page or block is changed (saved, published etc.). However, a page or a block containing another block (e.g. via content area) with a link to a file will not trigger the indexing event of the file when changed. In order to have the file indexed in such a scenario, the block linking to the file, or the file itself (necessary if it is not a page file), has to be &#8220;touched&#8221; (e.g. by checking &#8220;Update modified date&#8221;). Of course, one can always wait for the full index job to run.</p>
+      </div><!-- .entry-content -->
+    </article><!-- #post-## -->
+    
