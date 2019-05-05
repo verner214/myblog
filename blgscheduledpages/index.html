@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en-US" prefix="og: http://ogp.me/ns#" class="js svg background-fixed">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!--https://css-tricks.com/prefetching-preloading-prebrowsing/-->
+<link rel="dns-prefetch" href="http://fonts.googleapis.com/">
+<link rel="dns-prefetch" href="http://s.w.org/">
+<link href="https://fonts.gstatic.com/" crossorigin="" rel="preconnect">
+
+<link rel="stylesheet" id="wp-block-library-css" href="../css/style.min.css" type="text/css" media="all">
+<link rel="stylesheet" id="wp-block-library-theme-css" href="../css/theme.min.css" type="text/css" media="all">
+<link rel="stylesheet" id="twentyseventeen-fonts-css" href="../css/css" type="text/css" media="all">
+<link rel="stylesheet" id="twentyseventeen-style-css" href="../css/style.css" type="text/css" media="all">
+<link rel="stylesheet" id="twentyseventeen-block-style-css" href="../css/blocks.css" type="text/css" media="all">
+<link rel="stylesheet" href="../css/default.css" type="text/css" media="all">
+<link rel="stylesheet" id="wp-custom-css" href="../css/own.css" type="text/css" media="all">
+<script type='text/javascript' src='../js/frontend.min.js?ver=7.5.1'></script>
+<script type='text/javascript' src='../js/jquery.js?ver=1.12.4'></script>
+<script type='text/javascript' src='../js/jquery-migrate.min.js?ver=1.4.1'></script>
+<!-- end header1.html, start blogpost-header -->
+<title>List all scheduled pages in Episerver - LW</title>
+<meta property="article:tag" content="delayed" />
+<meta property="article:tag" content="schedule" />
+<meta property="article:tag" content="scheduler" />
+
+<!-- end blogpost header, start header2.html -->
+</head>
+<body class="post-template-default single single-post postid-120 single-format-standard wp-embed-responsive has-sidebar colors-light">
+<div id="page" class="site">
+    <header id="masthead" class="site-header" role="banner">
+        <div class="custom-header" style="margin-bottom: 0px;">
+            <div class="custom-header-media"></div>
+        
+            <div class="site-branding" style="margin-bottom: 0px;">
+                <div class="wrap">
+                    <div class="site-branding-text">
+                        <p class="site-title"><a href="https://waernulf.com/" rel="home">LW</a></p>                
+                        <p class="site-description">A blog about ASP.NET and EPiServer</p>
+                    </div><!-- .site-branding-text -->
+                </div><!-- .wrap -->
+            </div><!-- .site-branding -->
+
+        </div><!-- .custom-header -->
+    </header><!-- #masthead -->
+
+    <div class="site-content-contain">
+        <div id="content" class="site-content">    
+            <div class="wrap">
+                <div id="primary" class="content-area">
+                    <main id="main" class="site-main" role="main">
+    
+                
+    
+<!-- end header2.html -->
+<article id="post-120" class="post-120 post type-post status-publish format-standard hentry">
+    <header class="entry-header">
+        <div class="entry-meta">
+            <span class="posted-on">
+                <span class="screen-reader-text">Posted on</span> 
+                <time class="entry-date published updated" datetime="2018-05-05T23:44:54+02:00">May 5, 2018</time>
+            </span>
+        </div><!-- .entry-meta -->
+        <h1 class="entry-title">List all scheduled pages in Episerver</h1>	
+    </header><!-- .entry-header -->
+
+
+<div class="entry-content">
+    <p>At our company, we have a web site with a few pages that goes in and out of published state. For example, we are running a recurring campaign for a product that is sold periodically. At the end of every campaign the page is expired. When the campaign starts next time the page is activated again. The campaign allways starts at midnight and thus has to be scheduled (We have normal working hours). The scheduling is accomplished simply by setting the <em>published</em> property in the <em>settings</em> tab to a date in the future (you will get a warning saying &#8220;Expiration date cannot be prior to the published date&#8221; but the warning will vanish when expiration is removed). This is perhaps not the most &#8220;correct&#8221; way of scheduling a page but the Webmaster wants a list of all scheduled pages, no matter of how the scheduling is accomplished. That is particullary important since we have tousands of subscribers that receive an email when certain pages become published. The code is running in Episerver version 9.12.</p>
+<pre><code>
+public class ScheduledPageInfo
+{
+  public PageReference PageRef { get; set; }
+  public DateTime PublishDate { get; set; }
+}
+
+public class Util 
+{
+  public IEnumerable&lt;ScheduledPageInfo&gt; getDelayedPublished(PageData rootPage)
+  {
+  var Repo = ServiceLocator.Current.GetInstance&lt;IContentRepository&gt;();
+  var VersionRepo = ServiceLocator.Current.GetInstance&lt;IContentVersionRepository&gt;();
+  var RefList = Repo.GetDescendents(rootPage.PageLink);
+  List&lt;ScheduledPageInfo&gt; PageList = new List&lt;ScheduledPageInfo&gt;();
+
+  foreach (PageReference PageRef in RefList)
+  {
+    PageData Page = Repo.Get&lt;PageData&gt;(PageRef);
+
+    //Covers the cases: 
+    //1. StartPublish is set to a future date on an already published page (that is not yet 
+    //   visible to the visitors).
+    //2. A new page, i.e. no prior versions, that is "Scheduled for Publish".
+    //
+    //Note! It is necessary to check the Status of the page, Page.StartPublish is something
+    //like now plus one second for a page with Status set to VersionStatus.CheckedOut.
+    if (Page.StartPublish &gt;= DateTime.Now &amp;&amp;
+      (Page.Status == VersionStatus.Published || Page.Status == VersionStatus.DelayedPublish))
+      {
+        PageList.Add(new ScheduledPageInfo
+      {
+        PageRef = PageRef,
+        PublishDate = Page.StartPublish
+      });
+    }
+
+    //Covers the case when a page that is "Scheduled for Publish" has prior versions. 
+    //IContentRepository.Get(PageReference) returns the currently published version 
+    //when there are more versions for the given reference, and that is not what we want.
+    //In order to find future versions, we loop through all versions of a page, using 
+    //the default implementation of IContentVersionRepository.
+    else if (Page.Status == VersionStatus.Published)
+    {
+      var Versions = VersionRepo.List(PageRef);
+      foreach (var Version in Versions)
+      {
+        if (Version.Status == VersionStatus.DelayedPublish)
+        {
+          PageList.Add(new ScheduledPageInfo
+          {
+            PageRef = PageRef,
+            PublishDate = (DateTime) Version.DelayPublishUntil
+          });
+          break;
+        }
+      }//foreach
+    }
+  }//foreach
+  return PageList.OrderBy(p =&gt; p.PublishDate);
+  }//getDelayedPublished
+}//class
+</code></pre>
+
+</div><!-- .entry-content -->
+</article><!-- #post-## -->
+<!-- start footer.html -->
+</main><!-- #main -->
+</div><!-- #primary -->
+
+<aside id="secondary" class="widget-area" role="complementary" aria-label="Blog Sidebar">
+<section id="recent-posts-4" class="widget widget_recent_entries">		
+    <h2 class="widget-title">Recent Posts</h2>
+        <ul>
+            <li><a href="../blgindexingfiles/">Indexing files in blocks with Episerver Find</a></li>
+            <li><a href="../blgscheduledpages/">List all scheduled pages in Episerver</a></li>
+            <li><a href="../blgcreatenupkg/">Create a nuget package (for an episerver gadget)</a></li>
+            <li><a href="../blgblockfinder/">Visualizing block layout in on-page edit mode.</a></li>
+        </ul>
+</section>
+<section id="pages-3" class="widget widget_pages">
+    <h2 class="widget-title">Pages</h2>
+    <ul>
+        <li class="page_item page-item-9"><a href="../about/">About</a></li>
+    </ul>
+</section>
+</aside><!-- #secondary -->
+
+</div><!-- .wrap -->
+</div><!-- #content -->
+</div><!-- .site-content-contain -->
+</div><!-- #page -->
+<script type="text/javascript">
+/* <![CDATA[ */
+var twentyseventeenScreenReaderText = {"quote":"<svg class=\"icon icon-quote-right\" aria-hidden=\"true\" role=\"img\"> <use href=\"#icon-quote-right\" xlink:href=\"#icon-quote-right\"><\/use> <\/svg>"};
+/* ]]> */
+</script>
+<script type="text/javascript" src="../js/skip-link-focus-fix.js"></script>
+<script type="text/javascript" src="../js/global.js"></script>
+<script type="text/javascript" src="../js/jquery.scrollTo.js"></script>
+<script type="text/javascript" src="../js/wp-embed.min.js"></script>
+<script type="text/javascript" src="../js/highlight.common.pack.js"></script>
+<!--style>code.hljs { /*margin: 5px;*/ }</style-->
+<script type="text/javascript">
+(function($, window) {
+    var init_fn_flag = false;
+    var init_fn = (function() {
+        if (init_fn_flag)
+            return;
+        init_fn_flag = true;
+         hljs.configure({"tabReplace":"    "});
+        $('pre code').each(function(i, block) {
+            hljs.highlightBlock(block);
+        });
+    });
+    $(document).ready(init_fn);
+    $(window).on("load", init_fn);
+})(jQuery, window);
+</script>
+</body></html>
+
