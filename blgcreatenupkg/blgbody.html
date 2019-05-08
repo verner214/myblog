@@ -1,90 +1,89 @@
 <article id="post-120" class="post-120 post type-post status-publish format-standard hentry">
-    <header class="entry-header">
-        <div class="entry-meta">
-            <span class="posted-on">
-                <span class="screen-reader-text">Posted on</span>
-                <time class="entry-date published" datetime="2018-04-20T00:09:00+02:00">April 20, 2018</time> 
-            </span>
-        </div><!-- .entry-meta -->
-        <h1 class="entry-title">Create a nuget package (for an episerver gadget)</h1>	
-    </header><!-- .entry-header -->
+<header class="entry-header">
+    <div class="entry-meta">
+        <span class="posted-on">
+            <span class="screen-reader-text">Posted on</span>
+            <time class="entry-date published" datetime="2018-04-20T00:09:00+02:00">April 20, 2018</time> 
+        </span>
+    </div><!-- .entry-meta -->
+    <h1 class="entry-title">Create a nuget package (for an episerver gadget)</h1>	
+</header><!-- .entry-header -->
 
 
-    <div class="entry-content">
-      <p>Creating a nuget package is not difficult. It is just so many possibilities so that you don’t know where to start. In this post I will create a very basic package that can be used as a base for further projects, especially when developing episerver edit mode gadgets to be available in nuget galleries. Some of the common optional elements of a nuget package will be also be explained. In this post, a package for an episerver gadget described in <a href="../blgblockfinder/">another</a> post is created.</p>
-  <h2>.nuspec to .nupgk</h2>
-  <p>Creating a nuget package is done using the command line tool nuget.exe. Nuget.exe doesn’t come with visual studio and can be downloaded from <a href="https://www.nuget.org/downloads">https://www.nuget.org/downloads</a>. The <em>nuget pack</em> command will take a .nuspec file as input and produce a .nupkg file, that is, a nuget package. The .nuspec file is a text file with xml content and is either the result of running the <em>nuget spec</em> command or it is written from scratch. <em>nuget spec</em> can create a .nuspec file based on either an assembly dll or a VS project. The resulting .nupkg file is technically just a zip file and to view the contents of a package, simply replace the .nupgk extension with .zip and extract.</p>
-  <p>Here is the .nuspec file for our package</p>
-  <pre><code class="hljs xml">
-  <span class="php"><span class="hljs-meta">&lt;?</span>xml version=<span class="hljs-string">"1.0"</span> encoding=<span class="hljs-string">"utf-8"</span><span class="hljs-meta">?&gt;</span></span>
-  <span class="hljs-tag">&lt;<span class="hljs-name">package</span> <span class="hljs-attr">xmlns</span>=<span class="hljs-string">"http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd"</span>&gt;</span>
-    <span class="hljs-tag">&lt;<span class="hljs-name">metadata</span>&gt;</span>
-      <span class="hljs-comment">&lt;!-- Required metadata elements --&gt;</span>
-      <span class="hljs-tag">&lt;<span class="hljs-name">id</span>&gt;</span>BlockFinder<span class="hljs-tag">&lt;/<span class="hljs-name">id</span>&gt;</span>
-      <span class="hljs-tag">&lt;<span class="hljs-name">version</span>&gt;</span>1.0.5<span class="hljs-tag">&lt;/<span class="hljs-name">version</span>&gt;</span>
-      <span class="hljs-tag">&lt;<span class="hljs-name">description</span>&gt;</span>Find blocks within a page in episerver edit mode<span class="hljs-tag">&lt;/<span class="hljs-name">description</span>&gt;</span>
-      <span class="hljs-tag">&lt;<span class="hljs-name">authors</span>&gt;</span>Lars Waernulf<span class="hljs-tag">&lt;/<span class="hljs-name">authors</span>&gt;</span>
-  
-      <span class="hljs-comment">&lt;!-- Optional metadata elements --&gt;</span>
-      <span class="hljs-tag">&lt;<span class="hljs-name">projectUrl</span>&gt;</span>http://www.waernulf.com/<span class="hljs-tag">&lt;/<span class="hljs-name">projectUrl</span>&gt;</span>
-      <span class="hljs-tag">&lt;<span class="hljs-name">tags</span>&gt;</span>blocks add-on edit mode composer episerver<span class="hljs-tag">&lt;/<span class="hljs-name">tags</span>&gt;</span>
-      <span class="hljs-tag">&lt;<span class="hljs-name">dependencies</span>&gt;</span>
-        <span class="hljs-tag">&lt;<span class="hljs-name">dependency</span> <span class="hljs-attr">id</span>=<span class="hljs-string">"EPiServer.CMS.UI"</span> <span class="hljs-attr">version</span>=<span class="hljs-string">"9.9.2"</span> /&gt;</span>
-      <span class="hljs-tag">&lt;/<span class="hljs-name">dependencies</span>&gt;</span>
-      
-    <span class="hljs-tag">&lt;/<span class="hljs-name">metadata</span>&gt;</span>
-      
-    <span class="hljs-comment">&lt;!-- Optional 'files' node --&gt;</span>
-    <span class="hljs-comment">&lt;!-- src is source but target is special --&gt;</span>
-    <span class="hljs-tag">&lt;<span class="hljs-name">files</span>&gt;</span>
-      <span class="hljs-comment">&lt;!-- target="content\myfile.txt means file in src will be copied to {project root}\myfile.txt --&gt;</span>
-      <span class="hljs-tag">&lt;<span class="hljs-name">file</span> <span class="hljs-attr">src</span>=<span class="hljs-string">"..\..\alloy11mvc\BlockFinder\BlockFinderComponent.cs"</span> <span class="hljs-attr">target</span>=<span class="hljs-string">"content\BlockFinder\BlockFinderComponent.cs"</span> /&gt;</span>
-      <span class="hljs-tag">&lt;<span class="hljs-name">file</span> <span class="hljs-attr">src</span>=<span class="hljs-string">"blockFinder.zip"</span> <span class="hljs-attr">target</span>=<span class="hljs-string">"content\modules\_protected\blockFinder\blockFinder.zip"</span> /&gt;</span>
-      <span class="hljs-tag">&lt;<span class="hljs-name">file</span> <span class="hljs-attr">src</span>=<span class="hljs-string">"web.config.transform"</span> <span class="hljs-attr">target</span>=<span class="hljs-string">"content\web.config.transform"</span> /&gt;</span>
-      <span class="hljs-comment">&lt;!-- this combination of src and target will show the content of readme.txt after install --&gt;</span>
-      <span class="hljs-tag">&lt;<span class="hljs-name">file</span> <span class="hljs-attr">src</span>=<span class="hljs-string">"readme.txt"</span> <span class="hljs-attr">target</span>=<span class="hljs-string">""</span> /&gt;</span>
-      <span class="hljs-comment">&lt;!-- to add a dll, use target="lib\..." as shown below --&gt;</span>
-      <span class="hljs-comment">&lt;!-- make sure the framwork version, here net461, matches the target framework setting in the project where the dll is build--&gt;</span>
-      <span class="hljs-comment">&lt;!--file src="..\..\alloy11mvc\bin\alloy11mvc.dll" target="lib\net461" /--&gt;</span>
-      <span class="hljs-comment">&lt;!--file src="..\..\alloy11mvc\bin\alloy11mvc.pdb" target="lib\net461" /--&gt;</span>
-    <span class="hljs-tag">&lt;/<span class="hljs-name">files</span>&gt;</span>
-  <span class="hljs-tag">&lt;/<span class="hljs-name">package</span>&gt;</span>
-  </code></pre>
-  <h2>.nuspec elements</h2>
-  <p>Inside the root element <em>package</em>, there is one required element, <em>metadata</em>, and an optional element, <em>files</em>. The <em>id</em> element inside&nbsp;<em>metadata&nbsp;</em>has to be unique within the gallery. The <em>dependency</em> element lists dependencies to other nuget packages. Packages listed under <em>dependency</em> will be downloaded and installed if they are not already in the project the package is being installed into.</p>
-  <h3>&lt;file&gt;</h3>
-  <p>The <em>file</em> element inside the <em>files</em> element specifies file(s) to be included in the package. The <em>file&nbsp;</em>element has two attributes, <i>src</i>&nbsp;and <em>target</em>. The <em>src</em> attribute points to the source file(s). Wildcards are allowed. The <em>target</em> attribute is special. If you use a convention based working directory, no files have to be specified at all. You can read more about conventions, the target attribute and other details of the .nuspec file here <a href="https://docs.microsoft.com/en-us/nuget/create-packages/creating-a-package">https://docs.microsoft.com/en-us/nuget/create-packages/creating-a-package</a></p>
-  <h2>Verify and Upload</h2>
-  <p>Nuget package explorer is a valuable tool. It can be used for inspecting nuget packages. This is useful when developing your own package. The tool can open packages for inspection (without installing them) from the local disc as well as from nuget galleries. The tool can be downloaded from <a href="https://www.microsoft.com/sv-se/store/p/nuget-package-explorer/9wzdncrdmdm3">Microsoft</a>. Browser/firewall issues forced me to look for another download location which I found <a href="http://www.softpedia.com/get/Programming/Other-Programming-Files/NuGet-Package-Explorer.shtml">here</a>. I used google and <a href="https://www.virustotal.com/">this</a> service check the reputation of the location.</p>
- 
-  <figure id="attachment_88" aria-describedby="caption-attachment-88"  class="wp-caption alignnone"><img class="wp-image-88 size-full" src="./Capture_nugetExp105.jpg"><figcaption id="caption-attachment-88" class="wp-caption-text">The package is inspected before it is uploaded to a gallery</figcaption></figure>
-  
-  <p>Next step is to install the nuget package into Visual Studio from a local package source, i.e. a local disc. Open Nuget Package Manager in Visual Studio, create a new<em> package source</em> by pressing a button next to the <em>package source</em> drop down, choose the location of the created nuget package as the location of the new <em>package source</em> and install the package. After testing installation and removal, publishing a package to nuget.org is done simply by uploading the .nupkg file (you must sign in with a Microsoft account).</p>
-  <figure id="attachment_87" aria-describedby="caption-attachment-87" class="wp-caption alignnone"><img class="wp-image-87 size-full" src="./Capture_nuget105.jpg"><figcaption id="caption-attachment-87" class="wp-caption-text">The uploaded package visible in Nuget Package Manager</figcaption></figure>
-  <h2>Developing and packaging an episerver edit mode gadget</h2>
-  <p>Most people probably think of nuget packages as a way of distributing already built code, as assembly dll(s). An issue of concern is that you don’t know what is inside the dll(s). With a signed package, you can at least verify who the author is and decide which authors you want to trust. In this package, which isn’t signed, no dll is added. The very few lines of server side code have to be compiled with the project.</p>
-  <p>The files used for creating the package were put together in a project in the same solution as an alloy site project on which the gadget was developed and tested. In Visual Studio 2015 there is a project type called <em>shared project</em> that was suitable. The project type does not come with any default files or logic that have to be removed.</p>
-  <figure id="attachment_86" aria-describedby="caption-attachment-86" class="wp-caption alignnone"><img class="wp-image-86 size-full" src="./Capture_sharedprj.jpg"><figcaption id="caption-attachment-86" class="wp-caption-text">Shared project acts here as a folder</figcaption></figure>
-  <p>The Episerver framework together with the default configuration lets you install gadgets or modules in the format of a .zip file. It’s just an option and the by Episerver included modules are installed that way. It has advantages when it comes to version control. The module can be unzipped after being installed if content needs to be changed or added, the module will still work as before.</p>
-  <figure id="attachment_89" aria-describedby="caption-attachment-89" class="wp-caption alignnone"><img class="size-full wp-image-89" style="margin-left: 0px;" src="./Capture_nupkgs_project.jpg" alt=""><figcaption id="caption-attachment-89" class="wp-caption-text">A project for creating an episerver gadget</figcaption></figure>
-  <p>The package is created by open a cmd window, navigating to the BlockFinder folder and typing <em>build</em>. Before that, the folder <em>c:\nuget\</em> has to be created and <em>7zip</em> has to be installed. Here is the cmd script, <em>build.bat</em>, that builds the package.</p>
-  <pre><code class="hljs nginx"><span class="hljs-attribute">del</span> BlockFinder<span class="hljs-regexp">*.nupkg</span>
-  del BlockFinder.zip
-  <span class="hljs-string">"c:\program files\7-zip\7z.exe"</span> a -mm=Deflate BlockFinder.zip ..\..\Alloy11mvc\modules\_protected\blockFinder\*
-  nuget pack -Verbosity detailed
-  copy BlockFinder<span class="hljs-regexp">*.nupkg</span> c:\nuget\*
-  </code></pre>
-  <p>A file with the .transform extension contains transformations that will be applied to a file with the same name except the .transform extension. I.e. web.config.transform contains transformations that will be applied to web.config.</p>
-  <pre><code class="hljs xml"><span class="php"><span class="hljs-meta">&lt;?</span>xml version=<span class="hljs-string">"1.0"</span><span class="hljs-meta">?&gt;</span></span>
-  <span class="hljs-tag">&lt;<span class="hljs-name">configuration</span>&gt;</span>
-      <span class="hljs-tag">&lt;<span class="hljs-name">episerver.shell</span>&gt;</span>
-          <span class="hljs-tag">&lt;<span class="hljs-name">protectedModules</span>&gt;</span>
-              <span class="hljs-tag">&lt;<span class="hljs-name">add</span> <span class="hljs-attr">name</span>=<span class="hljs-string">"blockFinder"</span> /&gt;</span>
-          <span class="hljs-tag">&lt;/<span class="hljs-name">protectedModules</span>&gt;</span>
-      <span class="hljs-tag">&lt;/<span class="hljs-name">episerver.shell</span>&gt;</span>
-  <span class="hljs-tag">&lt;/<span class="hljs-name">configuration</span>&gt;</span>
-  </code></pre>
-  <p>Be careful not to install the package in the same project it was developed in.</p>
-    </div><!-- .entry-content -->
-  </article><!-- #post-## -->
-  
+<div class="entry-content">
+    <p>Creating a nuget package is not difficult. It is just so many possibilities so that you don’t know where to start. In this post I will create a very basic package that can be used as a base for further projects, especially when developing episerver edit mode gadgets to be available in nuget galleries. Some of the common optional elements of a nuget package will be also be explained. In this post, a package for an episerver gadget described in <a href="../blgblockfinder/">another</a> post is created.</p>
+<h2>.nuspec to .nupgk</h2>
+<p>Creating a nuget package is done using the command line tool nuget.exe. Nuget.exe doesn’t come with visual studio and can be downloaded from <a href="https://www.nuget.org/downloads">https://www.nuget.org/downloads</a>. The <em>nuget pack</em> command will take a .nuspec file as input and produce a .nupkg file, that is, a nuget package. The .nuspec file is a text file with xml content and is either the result of running the <em>nuget spec</em> command or it is written from scratch. <em>nuget spec</em> can create a .nuspec file based on either an assembly dll or a VS project. The resulting .nupkg file is technically just a zip file and to view the contents of a package, simply replace the .nupgk extension with .zip and extract.</p>
+<p>Here is the .nuspec file for our package</p>
+<pre><code class="hljs xml">
+<span class="php"><span class="hljs-meta">&lt;?</span>xml version=<span class="hljs-string">"1.0"</span> encoding=<span class="hljs-string">"utf-8"</span><span class="hljs-meta">?&gt;</span></span>
+<span class="hljs-tag">&lt;<span class="hljs-name">package</span> <span class="hljs-attr">xmlns</span>=<span class="hljs-string">"http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd"</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">metadata</span>&gt;</span>
+    <span class="hljs-comment">&lt;!-- Required metadata elements --&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">id</span>&gt;</span>BlockFinder<span class="hljs-tag">&lt;/<span class="hljs-name">id</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">version</span>&gt;</span>1.0.5<span class="hljs-tag">&lt;/<span class="hljs-name">version</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">description</span>&gt;</span>Find blocks within a page in episerver edit mode<span class="hljs-tag">&lt;/<span class="hljs-name">description</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">authors</span>&gt;</span>Lars Waernulf<span class="hljs-tag">&lt;/<span class="hljs-name">authors</span>&gt;</span>
+
+    <span class="hljs-comment">&lt;!-- Optional metadata elements --&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">projectUrl</span>&gt;</span>http://www.waernulf.com/<span class="hljs-tag">&lt;/<span class="hljs-name">projectUrl</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">tags</span>&gt;</span>blocks add-on edit mode composer episerver<span class="hljs-tag">&lt;/<span class="hljs-name">tags</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">dependencies</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">dependency</span> <span class="hljs-attr">id</span>=<span class="hljs-string">"EPiServer.CMS.UI"</span> <span class="hljs-attr">version</span>=<span class="hljs-string">"9.9.2"</span> /&gt;</span>
+    <span class="hljs-tag">&lt;/<span class="hljs-name">dependencies</span>&gt;</span>
+    
+<span class="hljs-tag">&lt;/<span class="hljs-name">metadata</span>&gt;</span>
+    
+<span class="hljs-comment">&lt;!-- Optional 'files' node --&gt;</span>
+<span class="hljs-comment">&lt;!-- src is source but target is special --&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">files</span>&gt;</span>
+    <span class="hljs-comment">&lt;!-- target="content\myfile.txt means file in src will be copied to {project root}\myfile.txt --&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">file</span> <span class="hljs-attr">src</span>=<span class="hljs-string">"..\..\alloy11mvc\BlockFinder\BlockFinderComponent.cs"</span> <span class="hljs-attr">target</span>=<span class="hljs-string">"content\BlockFinder\BlockFinderComponent.cs"</span> /&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">file</span> <span class="hljs-attr">src</span>=<span class="hljs-string">"blockFinder.zip"</span> <span class="hljs-attr">target</span>=<span class="hljs-string">"content\modules\_protected\blockFinder\blockFinder.zip"</span> /&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">file</span> <span class="hljs-attr">src</span>=<span class="hljs-string">"web.config.transform"</span> <span class="hljs-attr">target</span>=<span class="hljs-string">"content\web.config.transform"</span> /&gt;</span>
+    <span class="hljs-comment">&lt;!-- this combination of src and target will show the content of readme.txt after install --&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">file</span> <span class="hljs-attr">src</span>=<span class="hljs-string">"readme.txt"</span> <span class="hljs-attr">target</span>=<span class="hljs-string">""</span> /&gt;</span>
+    <span class="hljs-comment">&lt;!-- to add a dll, use target="lib\..." as shown below --&gt;</span>
+    <span class="hljs-comment">&lt;!-- make sure the framwork version, here net461, matches the target framework setting in the project where the dll is build--&gt;</span>
+    <span class="hljs-comment">&lt;!--file src="..\..\alloy11mvc\bin\alloy11mvc.dll" target="lib\net461" /--&gt;</span>
+    <span class="hljs-comment">&lt;!--file src="..\..\alloy11mvc\bin\alloy11mvc.pdb" target="lib\net461" /--&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">files</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">package</span>&gt;</span>
+</code></pre>
+<h2>.nuspec elements</h2>
+<p>Inside the root element <em>package</em>, there is one required element, <em>metadata</em>, and an optional element, <em>files</em>. The <em>id</em> element inside&nbsp;<em>metadata&nbsp;</em>has to be unique within the gallery. The <em>dependency</em> element lists dependencies to other nuget packages. Packages listed under <em>dependency</em> will be downloaded and installed if they are not already in the project the package is being installed into.</p>
+<h3>&lt;file&gt;</h3>
+<p>The <em>file</em> element inside the <em>files</em> element specifies file(s) to be included in the package. The <em>file&nbsp;</em>element has two attributes, <i>src</i>&nbsp;and <em>target</em>. The <em>src</em> attribute points to the source file(s). Wildcards are allowed. The <em>target</em> attribute is special. If you use a convention based working directory, no files have to be specified at all. You can read more about conventions, the target attribute and other details of the .nuspec file here <a href="https://docs.microsoft.com/en-us/nuget/create-packages/creating-a-package">https://docs.microsoft.com/en-us/nuget/create-packages/creating-a-package</a></p>
+<h2>Verify and Upload</h2>
+<p>Nuget package explorer is a valuable tool. It can be used for inspecting nuget packages. This is useful when developing your own package. The tool can open packages for inspection (without installing them) from the local disc as well as from nuget galleries. The tool can be downloaded from <a href="https://www.microsoft.com/sv-se/store/p/nuget-package-explorer/9wzdncrdmdm3">Microsoft</a>. Browser/firewall issues forced me to look for another download location which I found <a href="http://www.softpedia.com/get/Programming/Other-Programming-Files/NuGet-Package-Explorer.shtml">here</a>. I used google and <a href="https://www.virustotal.com/">this</a> service check the reputation of the location.</p>
+
+<figure id="attachment_88" aria-describedby="caption-attachment-88"  class="wp-caption alignnone"><img class="wp-image-88 size-full" src="./Capture_nugetExp105.jpg"><figcaption id="caption-attachment-88" class="wp-caption-text">The package is inspected before it is uploaded to a gallery</figcaption></figure>
+
+<p>Next step is to install the nuget package into Visual Studio from a local package source, i.e. a local disc. Open Nuget Package Manager in Visual Studio, create a new<em> package source</em> by pressing a button next to the <em>package source</em> drop down, choose the location of the created nuget package as the location of the new <em>package source</em> and install the package. After testing installation and removal, publishing a package to nuget.org is done simply by uploading the .nupkg file (you must sign in with a Microsoft account).</p>
+<figure id="attachment_87" aria-describedby="caption-attachment-87" class="wp-caption alignnone"><img class="wp-image-87 size-full" src="./Capture_nuget105.jpg"><figcaption id="caption-attachment-87" class="wp-caption-text">The uploaded package visible in Nuget Package Manager</figcaption></figure>
+<h2>Developing and packaging an episerver edit mode gadget</h2>
+<p>Most people probably think of nuget packages as a way of distributing already built code, as assembly dll(s). An issue of concern is that you don’t know what is inside the dll(s). With a signed package, you can at least verify who the author is and decide which authors you want to trust. In this package, which isn’t signed, no dll is added. The very few lines of server side code have to be compiled with the project.</p>
+<p>The files used for creating the package were put together in a project in the same solution as an alloy site project on which the gadget was developed and tested. In Visual Studio 2015 there is a project type called <em>shared project</em> that was suitable. The project type does not come with any default files or logic that have to be removed.</p>
+<figure id="attachment_86" aria-describedby="caption-attachment-86" class="wp-caption alignnone"><img class="wp-image-86 size-full" src="./Capture_sharedprj.jpg"><figcaption id="caption-attachment-86" class="wp-caption-text">Shared project acts here as a folder</figcaption></figure>
+<p>The Episerver framework together with the default configuration lets you install gadgets or modules in the format of a .zip file. It’s just an option and the by Episerver included modules are installed that way. It has advantages when it comes to version control. The module can be unzipped after being installed if content needs to be changed or added, the module will still work as before.</p>
+<figure id="attachment_89" aria-describedby="caption-attachment-89" class="wp-caption alignnone"><img class="size-full wp-image-89" style="margin-left: 0px;" src="./Capture_nupkgs_project.jpg" alt=""><figcaption id="caption-attachment-89" class="wp-caption-text">A project for creating an episerver gadget</figcaption></figure>
+<p>The package is created by open a cmd window, navigating to the BlockFinder folder and typing <em>build</em>. Before that, the folder <em>c:\nuget\</em> has to be created and <em>7zip</em> has to be installed. Here is the cmd script, <em>build.bat</em>, that builds the package.</p>
+<pre><code class="hljs nginx"><span class="hljs-attribute">del</span> BlockFinder<span class="hljs-regexp">*.nupkg</span>
+del BlockFinder.zip
+<span class="hljs-string">"c:\program files\7-zip\7z.exe"</span> a -mm=Deflate BlockFinder.zip ..\..\Alloy11mvc\modules\_protected\blockFinder\*
+nuget pack -Verbosity detailed
+copy BlockFinder<span class="hljs-regexp">*.nupkg</span> c:\nuget\*
+</code></pre>
+<p>A file with the .transform extension contains transformations that will be applied to a file with the same name except the .transform extension. I.e. web.config.transform contains transformations that will be applied to web.config.</p>
+<pre><code class="hljs xml"><span class="php"><span class="hljs-meta">&lt;?</span>xml version=<span class="hljs-string">"1.0"</span><span class="hljs-meta">?&gt;</span></span>
+<span class="hljs-tag">&lt;<span class="hljs-name">configuration</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">episerver.shell</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">protectedModules</span>&gt;</span>
+            <span class="hljs-tag">&lt;<span class="hljs-name">add</span> <span class="hljs-attr">name</span>=<span class="hljs-string">"blockFinder"</span> /&gt;</span>
+        <span class="hljs-tag">&lt;/<span class="hljs-name">protectedModules</span>&gt;</span>
+    <span class="hljs-tag">&lt;/<span class="hljs-name">episerver.shell</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">configuration</span>&gt;</span>
+</code></pre>
+<p>Be careful not to install the package in the same project it was developed in.</p>
+</div><!-- .entry-content -->
+</article><!-- #post-## -->

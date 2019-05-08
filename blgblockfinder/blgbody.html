@@ -24,76 +24,76 @@
   <figure id="attachment_28" aria-describedby="caption-attachment-28" class="wp-caption alignnone"><img style="margin-left: 0px;" class="size-medium wp-image-28" src="./myE_vsFileStructure-300x168.jpg" alt="" ><figcaption id="caption-attachment-28" class="wp-caption-text">The file structure (except server side registration component)</figcaption></figure>
   <p>&nbsp;</p>
   <p>module.config</p>
-  <pre><code>
-  &lt;?xml version="1.0" encoding="utf-8" ?&gt;
-  &lt;module&gt;
-    &lt;dojo&gt;
-      &lt;paths&gt;
-        &lt;add name="myEditModeWidget" path="scripts" /&gt;
-      &lt;/paths&gt;
-    &lt;/dojo&gt;
-  &lt;/module&gt;
-  </code></pre>
-  <p>myEditModeGadget.js</p>
-  <pre><code>
-  define([
-      "dojo/_base/declare",
-      "dijit/_WidgetBase"
-  ], function (
-      declare,
-      _WidgetBase
-  ) {
-      return declare([_WidgetBase], {
-          //startup is one of the lifecycle methods in a widget.
-          startup: function () {
-              this.inherited(arguments);
-              console.log('I am started.');
-          }
-      });
-  });
-  </code></pre>
-  <p>The default configuration requires the widget to be registered in web.config</p>
-  <pre><code>
-    &lt;episerver.shell&gt;
-      &lt;publicModules rootPath="~/modules/" autoDiscovery="Modules" /&gt;
-      &lt;protectedModules rootPath="~/EPiServer/"&gt;      
-        &lt;add name="myEditModeWidget" /&gt;
-  </code></pre>
+<pre><code>
+&lt;?xml version="1.0" encoding="utf-8" ?&gt;
+&lt;module&gt;
+  &lt;dojo&gt;
+    &lt;paths&gt;
+      &lt;add name="myEditModeWidget" path="scripts" /&gt;
+    &lt;/paths&gt;
+  &lt;/dojo&gt;
+&lt;/module&gt;
+</code></pre>
+<p>myEditModeGadget.js</p>
+<pre><code>
+define([
+    "dojo/_base/declare",
+    "dijit/_WidgetBase"
+], function (
+    declare,
+    _WidgetBase
+) {
+    return declare([_WidgetBase], {
+        //startup is one of the lifecycle methods in a widget.
+        startup: function () {
+            this.inherited(arguments);
+            console.log('I am started.');
+        }
+    });
+});
+</code></pre>
+<p>The default configuration requires the widget to be registered in web.config</p>
+<pre><code>
+  &lt;episerver.shell&gt;
+    &lt;publicModules rootPath="~/modules/" autoDiscovery="Modules" /&gt;
+    &lt;protectedModules rootPath="~/EPiServer/"&gt;      
+      &lt;add name="myEditModeWidget" /&gt;
+</code></pre>
   <p>Finally, a server side registration of the gadget</p>
-  <pre><code>
-  using EPiServer.Shell.ViewComposition;
-  
-  namespace BlockFinder.BlockFinderComponent
-  {
-      [Component]
-      public class MyEditModeWidgetComponent : ComponentDefinitionBase
-      {
-          public MyEditModeWidgetComponent()
-              : base("myEditModeWidget/myEditModeWidgetComponent")
-          {
-              Description = "The description of this gadget";
-              Title = "myEditModeGadget";
-  
-              this.Categories = new string[] { "content" };
-              this.PlugInAreas = new string[]
-              {
-                  "/episerver/cms/mainnavigation"
-              };
-          }
-      }
-  }
-  </code></pre>
+<pre><code>
+using EPiServer.Shell.ViewComposition;
+
+namespace BlockFinder.BlockFinderComponent
+{
+    [Component]
+    public class MyEditModeWidgetComponent : ComponentDefinitionBase
+    {
+        public MyEditModeWidgetComponent()
+            : base("myEditModeWidget/myEditModeWidgetComponent")
+        {
+            Description = "The description of this gadget";
+            Title = "myEditModeGadget";
+
+            this.Categories = new string[] { "content" };
+            this.PlugInAreas = new string[]
+            {
+                "/episerver/cms/mainnavigation"
+            };
+        }
+    }
+}
+</code></pre>
   <h2>Widget interaction</h2>
   <p>A widget should extend dijit/_WidgetBase which define a number of callbacks that controls the lifecycle of the widget. It is optional to override the methods but typically one of callbacks, of which most controls different phases of the initialization process, is overridden to set up the widget.</p>
   <p>The pluggable widgets communicate with the UI framework of the episerver edit mode and with each other using a publish and subscribe message-mechanism provided by dojo. A widget can use this feature directly or by inheriting classes that offer callbacks triggered in response to various messages. E.g. the class epi/shell/_ContextMixin abstracts away the messages and provides a callback that notifies when context changes (i.e. editable content) filtering out duplicate messages etc. The class also provide a public method for querying current context.</p>
   <p>Only a few messages are “public” and documented but it is possible to watch all the published messages in real time. By pasting the following code snippet into the F12-console of the browser, the names of every published message will be written out. The snippet does not display any message arguments but could easily be extended to do so. Any number of arguments could be specified.</p>
-  <pre><code>
-  require(['dojo/aspect', 'dojo/topic'], function (aspect, topic) {
-      aspect.after(topic, 'publish', function (topicName) {
-          console.log('topicName=' + topicName);
-      }, true);
-  });
-  </code></pre>
+<pre><code>
+require(['dojo/aspect', 'dojo/topic'], function (aspect, topic) {
+    aspect.after(topic, 'publish', function (topicName) {
+        console.log('topicName=' + topicName);
+    }, true);
+});
+</code></pre>
   <p>The publish/subscribe feature does not provide a function for querying the available messages but by using the dojo/aspect module it is possible to add functionality to existing methods. The &#8220;after&#8221; function above &#8220;inserts&#8221; an anonymous function to be executed every time the <em>publish</em> method of the <i>topic</i> object is executed.</p>
   <p>Three messages of special interest, listed below, shows up when selecting a page in the page tree. The first two happens right before the content is replaced and the last one occurs when the new content is rendered.</p>
   <pre><code>
@@ -103,212 +103,211 @@
   </code></pre>
   <h2>Episerver on page edit</h2>
   <p>In order to keep the markup rendered in on page edit mode (OPE) as close as possible to the markup shown to the visitor, the Episerver framework renders the page in its own iframe and places the OPE specific markup in a separate element on the top of the iframe, in a so-called overlay. Some minimal content is however added to the iframe so that the editable contents can be found by the framework. A block is identified by its id in a data-attribute, <em>data-epi-block-id</em>. The name of the block can be found in the attribute <em>data-epi-content-name</em>.</p>
-  <pre><code>
-  &lt;iframe name="sitePreview"&gt;
-    ...
-    &lt;div data-epi-block-id="195" data-epi-content-name="Article"&gt;
-      block content here...
-    &lt;/div&gt;
-    ...
-  &lt;/iframe&gt;
-  </code></pre>
-  <p>Also blocks buried deep down in the DOM have their corresponding data-attributes rendered, not just the blocks that are selectable in the current OPE view.</p>
-  <h2>Block Finder</h2>
-  <p>The purpose of the first widget was to show the widget infrastructure. A more interesting widget and reason for this post, BlockFinder, is using the techniques described above. The source code files of BlockFinder follow the same structure as the files of the first widget.</p>
-  <figure id="attachment_27" aria-describedby="caption-attachment-27" class="wp-caption alignnone"><img style="margin-left: 0px;" class="wp-image-27 size-medium" src="./blg_bf_vs-300x184.jpg" alt=""><figcaption id="caption-attachment-27" class="wp-caption-text">Editors and admins have access to protected modules . There is also a server side source file not shown in this image.</figcaption></figure>
-  <p>The widget is registered at the server side with the component attribute.</p>
-  <pre><code>
-  using EPiServer.Shell.ViewComposition;
-  
-  namespace BlockFinder.BlockFinderComponent
-  {
-      [Component]
-      public class BlockFinderComponent : ComponentDefinitionBase
-      {
-          public BlockFinderComponent()
-              : base("blockFinder/blockFinderComponent")
-          {
-              Description = "Find blocks in a page";
-              Title = "Block Finder";
-  
-              this.Categories = new string[] { "content" };
-              this.PlugInAreas = new string[]
-              {
-                  "/episerver/cms/mainnavigation"
-              };
-          }
+<pre><code>
+&lt;iframe name="sitePreview"&gt;
+  ...
+  &lt;div data-epi-block-id="195" data-epi-content-name="Article"&gt;
+    block content here...
+  &lt;/div&gt;
+  ...
+&lt;/iframe&gt;
+</code></pre>
+<p>Also blocks buried deep down in the DOM have their corresponding data-attributes rendered, not just the blocks that are selectable in the current OPE view.</p>
+<h2>Block Finder</h2>
+<p>The purpose of the first widget was to show the widget infrastructure. A more interesting widget and reason for this post, BlockFinder, is using the techniques described above. The source code files of BlockFinder follow the same structure as the files of the first widget.</p>
+<figure id="attachment_27" aria-describedby="caption-attachment-27" class="wp-caption alignnone"><img style="margin-left: 0px;" class="wp-image-27 size-medium" src="./blg_bf_vs-300x184.jpg" alt=""><figcaption id="caption-attachment-27" class="wp-caption-text">Editors and admins have access to protected modules . There is also a server side source file not shown in this image.</figcaption></figure>
+<p>The widget is registered at the server side with the component attribute.</p>
+<pre><code>
+using EPiServer.Shell.ViewComposition;
+
+namespace BlockFinder.BlockFinderComponent
+{
+    [Component]
+    public class BlockFinderComponent : ComponentDefinitionBase
+    {
+        public BlockFinderComponent()
+            : base("blockFinder/blockFinderComponent")
+        {
+            Description = "Find blocks in a page";
+            Title = "Block Finder";
+
+            this.Categories = new string[] { "content" };
+            this.PlugInAreas = new string[]
+            {
+                "/episerver/cms/mainnavigation"
+            };
+        }
+    }
+}
+</code></pre>
+<p>The widget script, blockFinderComponent.js, is built using the dojo framework and plain javascript.</p>
+<pre><code>
+define([
+  "dojo/_base/declare",
+  "dojo/_base/lang",
+  "dojo/store/Memory",
+  "dojo/on",
+  "dgrid/Keyboard", //capture mouse events
+  "dgrid/OnDemandGrid",
+  "dgrid/Selection",
+  "dijit/layout/_LayoutWidget",
+  "dojo/topic"
+],
+function (
+  declare,
+  lang,
+  Memory,
+  on,
+  Keyboard,
+  OnDemandGrid,
+  Selection,
+  _LayoutWidget,
+  topic
+) {
+  return declare([_LayoutWidget], {
+
+    //css class for the containing element of the widget
+    baseClass: "blockFinder", 
+
+    _gridClass: declare([OnDemandGrid, Selection, Keyboard]),
+
+    _savedBackground: {},
+
+    constructor: function () {
+      this.store = new Memory({ data: {} });
+    },
+
+    buildRendering: function () {
+      this.inherited(arguments);
+
+      var gridSettings = {
+        columns: this._createGridColumns(),
+        store: this.store,
+        selectionMode: "single"
+      };
+
+      this.grid = new this._gridClass(gridSettings, this.domNode);
+    },
+
+    startup: function () {
+      if (this._started) {
+        return;
       }
-  }
-  </code></pre>
-  <p>The widget script, blockFinderComponent.js, is built using the dojo framework and plain javascript.</p>
-  <pre><code>
-  define([
-    "dojo/_base/declare",
-    "dojo/_base/lang",
-    "dojo/store/Memory",
-    "dojo/on",
-    "dgrid/Keyboard", //capture mouse events
-    "dgrid/OnDemandGrid",
-    "dgrid/Selection",
-    "dijit/layout/_LayoutWidget",
-    "dojo/topic"
-  ],
-  function (
-    declare,
-    lang,
-    Memory,
-    on,
-    Keyboard,
-    OnDemandGrid,
-    Selection,
-    _LayoutWidget,
-    topic
-  ) {
-    return declare([_LayoutWidget], {
-  
-      //css class for the containing element of the widget
-      baseClass: "blockFinder", 
-  
-      _gridClass: declare([OnDemandGrid, Selection, Keyboard]),
-  
-      _savedBackground: {},
-  
-      constructor: function () {
-        this.store = new Memory({ data: {} });
-      },
-  
-      buildRendering: function () {
-        this.inherited(arguments);
-  
-        var gridSettings = {
-          columns: this._createGridColumns(),
-          store: this.store,
-          selectionMode: "single"
-        };
-  
-        this.grid = new this._gridClass(gridSettings, this.domNode);
-      },
-  
-      startup: function () {
-        if (this._started) {
-          return;
-        }
-  
-        this.inherited(arguments);
-        this.grid.on(".dgrid-row:click", lang.hitch(this, this._changeContext));
-        this.grid.on(".dgrid-row:mouseover", lang.hitch(this, this._highLightBlock));
-        this.grid.on(".dgrid-row:mouseout", lang.hitch(this, this._highLightBlockOff));
-  
-        //handles here will get destroyed because _LayoutWidget is based on dijit/_WidgetBase that is based on dijit/Destroyable where the own function is defined.
-        this.own(
-          topic.subscribe("dijit__TemplatedMixin_2-addChild", lang.hitch(this, this._findBlocks)),
-          topic.subscribe("dijit__TemplatedMixin_3-addChild", lang.hitch(this, this._findBlocks)),
-          topic.subscribe("dijit__TemplatedMixin_4-addChild", lang.hitch(this, this._findBlocks)),
-          topic.subscribe("dijit__TemplatedMixin_5-addChild", lang.hitch(this, this._findBlocks)),
-          topic.subscribe("dijit__TemplatedMixin_6-addChild", lang.hitch(this, this._findBlocks))
-        );
-      },
-  
-      //called by epi when gadget is removed
-      destroy: function () {
-        if (this.grid) {
-          this.grid.destroy();
-        }
-        this.inherited(arguments);
-      },
-  
-      _highLightBlock: function (e) {
-        var row = this.grid.row(e);
-        if (row &amp;&amp; row.data &amp;&amp; row.data.elem) {
-          var node = row.data.elem;
-          this._savedBackground[row.data.id] = node.style["background-color"];
-          node.style["background-color"] = "#C6D501";
-        }
-      },
-  
-      _highLightBlockOff: function (e) {
-        var row = this.grid.row(e);
-        if (row &amp;&amp; row.data &amp;&amp; row.data.elem) {
-          var node = row.data.elem;
-          node.style["background-color"] = this._savedBackground[row.data.id];
-        }
-      },
-  
-      _changeContext: function (e) {
-        var row = this.grid.row(e);
-        var pageLink = row.data.blockid; 
-        var contextParameters = { uri: 'epi.cms.contentdata:///' + pageLink };
-        topic.publish("/epi/shell/context/request", contextParameters);
-      },
-  
-      //content loaded and ready to be queried
-      _findBlocks: function () {
-        //get a reference to the iframe were the content is rendered
-        var ifrm = document.getElementsByName("sitePreview")[0].contentWindow.document;
-        this.store.setData([]);//empty store
-        this._addBlocksToStore(ifrm, "0", 0);
-        this.grid.refresh();
-      },
-  
-      //traverses the iframe for blocks
-      _addBlocksToStore: function (node, id, depth) {
-        var blockid = node.getAttribute !== undefined ? node.getAttribute("data-epi-block-id") : null;
-        if (blockid !== null) {
-          var row = { id: id, blockid: blockid, name: node.getAttribute("data-epi-content-name"), elem: node, depth: depth };
-          this.store.add(row);
-          depth++;
-        }
-        for (var i = 0; i &lt; node.childNodes.length; i++) {
-          this._addBlocksToStore(node.childNodes[i], id + "" + i, depth);
-        }
-      },
-  
-      _createGridColumns: function () {
-        var columns = {
-          name: {
-            label: 'Block Name',
-            className: "epi-width50",
-            renderCell: function (object, value, node, options) {
-              node.innerHTML = "&lt;div style='margin-left: " + (object['depth'] * 1) + "em'&gt;" + object['name'] + "&lt;/div&gt;";
-            },
-          }
-        };
-        return columns;
+
+      this.inherited(arguments);
+      this.grid.on(".dgrid-row:click", lang.hitch(this, this._changeContext));
+      this.grid.on(".dgrid-row:mouseover", lang.hitch(this, this._highLightBlock));
+      this.grid.on(".dgrid-row:mouseout", lang.hitch(this, this._highLightBlockOff));
+
+      //handles here will get destroyed because _LayoutWidget is based on dijit/_WidgetBase that is based on dijit/Destroyable where the own function is defined.
+      this.own(
+        topic.subscribe("dijit__TemplatedMixin_2-addChild", lang.hitch(this, this._findBlocks)),
+        topic.subscribe("dijit__TemplatedMixin_3-addChild", lang.hitch(this, this._findBlocks)),
+        topic.subscribe("dijit__TemplatedMixin_4-addChild", lang.hitch(this, this._findBlocks)),
+        topic.subscribe("dijit__TemplatedMixin_5-addChild", lang.hitch(this, this._findBlocks)),
+        topic.subscribe("dijit__TemplatedMixin_6-addChild", lang.hitch(this, this._findBlocks))
+      );
+    },
+
+    //called by epi when gadget is removed
+    destroy: function () {
+      if (this.grid) {
+        this.grid.destroy();
       }
-    });//declare
-  });//define
-  </code></pre>
-  <p>Some minimal styling in blockFinder.css.</p>
-  <pre><code>
-  .blockFinder .dgrid-row:hover {
-      background-color: #C0C0C0;
-  }
-  .blockFinder .dgrid-row {
-      padding: 0px;
-  }
-  </code></pre>
-  <p>module.config declares the resources of the add-on.</p>
-  <pre><code>
-  &lt;?xml version="1.0" encoding="utf-8" ?&gt;
-  &lt;module&gt;
-    &lt;dojo&gt;
-      &lt;paths&gt;
-        &lt;add name="blockFinder" path="scripts" /&gt;
-      &lt;/paths&gt;
-    &lt;/dojo&gt;
-    &lt;clientResources&gt;
-      &lt;add name="epi-cms.widgets.base" path="scripts/content/blockFinder.css" resourceType="Style"&gt;
-      &lt;/add&gt;
-    &lt;/clientResources&gt;
-  &lt;/module&gt;
-  </code></pre>
-  <p>Using the module/gadget configuration found in the Alloy site as well as in the empty site of the episerver visual studio plugin, a module installed in the protected area has to be listed in web.config like this:</p>
-  <pre><code>
-      &lt;protectedModules rootPath="~/EPiServer/"&gt;
-        &lt;add name="blockFinder" /&gt;
-  </code></pre>
-  <p>In <a href="../blgcreatenupkg/">another post</a> I will describe how to assemble this widget into a nuget package and distribute it.</p>
-    </div><!-- .entry-content -->
-  </article><!-- #post-## -->
-  
-  
+      this.inherited(arguments);
+    },
+
+    _highLightBlock: function (e) {
+      var row = this.grid.row(e);
+      if (row &amp;&amp; row.data &amp;&amp; row.data.elem) {
+        var node = row.data.elem;
+        this._savedBackground[row.data.id] = node.style["background-color"];
+        node.style["background-color"] = "#C6D501";
+      }
+    },
+
+    _highLightBlockOff: function (e) {
+      var row = this.grid.row(e);
+      if (row &amp;&amp; row.data &amp;&amp; row.data.elem) {
+        var node = row.data.elem;
+        node.style["background-color"] = this._savedBackground[row.data.id];
+      }
+    },
+
+    _changeContext: function (e) {
+      var row = this.grid.row(e);
+      var pageLink = row.data.blockid; 
+      var contextParameters = { uri: 'epi.cms.contentdata:///' + pageLink };
+      topic.publish("/epi/shell/context/request", contextParameters);
+    },
+
+    //content loaded and ready to be queried
+    _findBlocks: function () {
+      //get a reference to the iframe were the content is rendered
+      var ifrm = document.getElementsByName("sitePreview")[0].contentWindow.document;
+      this.store.setData([]);//empty store
+      this._addBlocksToStore(ifrm, "0", 0);
+      this.grid.refresh();
+    },
+
+    //traverses the iframe for blocks
+    _addBlocksToStore: function (node, id, depth) {
+      var blockid = node.getAttribute !== undefined ? node.getAttribute("data-epi-block-id") : null;
+      if (blockid !== null) {
+        var row = { id: id, blockid: blockid, name: node.getAttribute("data-epi-content-name"), elem: node, depth: depth };
+        this.store.add(row);
+        depth++;
+      }
+      for (var i = 0; i &lt; node.childNodes.length; i++) {
+        this._addBlocksToStore(node.childNodes[i], id + "" + i, depth);
+      }
+    },
+
+    _createGridColumns: function () {
+      var columns = {
+        name: {
+          label: 'Block Name',
+          className: "epi-width50",
+          renderCell: function (object, value, node, options) {
+            node.innerHTML = "&lt;div style='margin-left: " + (object['depth'] * 1) + "em'&gt;" + object['name'] + "&lt;/div&gt;";
+          },
+        }
+      };
+      return columns;
+    }
+  });//declare
+});//define
+</code></pre>
+<p>Some minimal styling in blockFinder.css.</p>
+<pre><code>
+.blockFinder .dgrid-row:hover {
+    background-color: #C0C0C0;
+}
+.blockFinder .dgrid-row {
+    padding: 0px;
+}
+</code></pre>
+<p>module.config declares the resources of the add-on.</p>
+<pre><code>
+&lt;?xml version="1.0" encoding="utf-8" ?&gt;
+&lt;module&gt;
+  &lt;dojo&gt;
+    &lt;paths&gt;
+      &lt;add name="blockFinder" path="scripts" /&gt;
+    &lt;/paths&gt;
+  &lt;/dojo&gt;
+  &lt;clientResources&gt;
+    &lt;add name="epi-cms.widgets.base" path="scripts/content/blockFinder.css" resourceType="Style"&gt;
+    &lt;/add&gt;
+  &lt;/clientResources&gt;
+&lt;/module&gt;
+</code></pre>
+<p>Using the module/gadget configuration found in the Alloy site as well as in the empty site of the episerver visual studio plugin, a module installed in the protected area has to be listed in web.config like this:</p>
+<pre><code>
+    &lt;protectedModules rootPath="~/EPiServer/"&gt;
+      &lt;add name="blockFinder" /&gt;
+</code></pre>
+<p>In <a href="../blgcreatenupkg/">another post</a> I will describe how to assemble this widget into a nuget package and distribute it.</p>
+  </div><!-- .entry-content -->
+</article><!-- #post-## -->
+
