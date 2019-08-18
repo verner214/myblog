@@ -1,7 +1,7 @@
 #--------- enkelt cms --------- 
-kommandon: buildblog.bat
-copy header.html + /blog1/body.html + footer.html /blog1/index.html
-copy header.html + /blog2/body.html + footer.html /blog2/index.html
+kommandon: buildblog.bat 
+copy header.html + /blog1/body.html + footer.html /blog1/index.html 
+copy header.html + /blog2/body.html + footer.html /blog2/index.html 
 
 #--------- filer ------------
 /blog1/body.html
