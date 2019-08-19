@@ -21,19 +21,7 @@ about.html
 /src/blog2/index.html -- etc.  
   
   
+  
 #my useful commands  
-git pull origin master -- hämtar senaste och gör merge (säger till om det är konflikter)  
-git add .  -- markerar alla ändringar och nya filer som med i staging  
-git commit -m "obligatorisk kommentar" -- check init  
-git push -u origin master -- skickar till github  
-git clone https://github.com/verner214/myblog.git --hämtar hem repository (för första gången ?).  
-  
-  
-from start page after creating a new repository:  
-  
-echo "# myblog" >> README.md  
-git init  
-git add README.md  
-git commit -m "first commit"  
-git remote add origin https://github.com/verner214/myblog.git --skulle tro: origin (i denna repository) blir en synonym för urlen  
-git push -u origin master  
+se https://gnaget.z16.web.core.windows.net/view/index.html?id=59c9e7a1-93af-4ff0-a172-7658e695c3f9
+eller sök git.
