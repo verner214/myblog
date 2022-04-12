@@ -1,0 +1,162 @@
+<article id="post-120" class="post-120 post type-post status-publish format-standard hentry">
+    <header class="entry-header">
+        <div class="entry-meta">
+            <span class="posted-on">
+                <span class="screen-reader-text">Posted on</span> 
+                <time class="entry-date published" datetime="2022-04-12T21:59:33+02:00">April 12, 2022</time>
+            </span>
+        </div><!-- .entry-meta -->
+        <h1 class="entry-title">Bundling and Minifying in Optimizely and ASP.NET Core</h1>	
+    </header><!-- .entry-header -->
+
+
+    <div class="entry-content">
+      <p>WebCompiler used to be a very useful extension to Visual Studio but is no longer supported. A great replacement is WebOptimizer, an open source project 
+        recommended by Microsoft. WebOptimizer is used as a middleware which means it operates at runtime, so no hassle with build configuration. 
+        The first request will trigger WebOtimizer to bundle and minify files which then will be cached for further requests. 
+        In this post I will describe how to set up WebOptimizer to bundle and minify javascript files as well as bundle, 
+        minify and compile scss files. I will also demonstrate code that creates markup width links to assets without bundling and minification, for the development environment</p>
+      
+      <h2>Optimizely</h2>
+      <p>WebOptimizer is in this post used with Visual Studio 2022 and ASP.NET Core 5.0. The project in which I used WebOptimizer is built upon a CMS called Optimizely, formerly known as Episerver. 
+        This content of this post is however applicable for other project types as well. </p>
+      
+      <h2>Installation</h2>
+      <p>WebOptimizer is installed as a nuget package, LigerShark.WebOptimizer.Core (3.0.357 latest and used in my project). In order to compile sass, 
+        a separate nuget has to be installed, LigerShark.WebOptimizer.Sass (3.0.84).</p>
+      
+        <h3>Filestructure</h3>
+        In this example the filestructure of .js and .scss files are as follows (variables.scss is assumed to be included in the other two .scss files):
+        <ul>
+          <li>wwwroot<ul>
+            <li>sass<ul>
+              <li>variables.scss</li>
+              <li>base.scss</li>
+              <li>colors.scss</li>
+            </ul></li>
+          <li>js<ul>
+            <li>script1.js</li>
+            <li>script2.js</li>
+          </ul></li>
+        </ul></li>
+      </ul>
+  
+      <h3>Startup.cs</h3>
+      <p>Note that this Startup is not complete, It containes code to show how I use WebOptimizer but not much more. 
+        In order to keep Startup clear, I've introduced a separate extension method, AddBundleAndMinify().</p>
+      <pre><code>
+      using MyMiddleware;
+      
+      public class Startup
+      {
+        public IConfiguration Configuration { get; }
+        public IWebHostEnvironment Env { get; }
+      
+        public Startup(IConfiguration configuration, IWebHostEnvironment env)
+        {
+          Configuration = configuration;
+          Env = env;
+        }
+      
+        public void ConfigureServices(IServiceCollection services)
+        {
+          services.AddControllersWithViews();
+          services.AddBundleAndMinify(Env.IsDevelopment());
+        }
+        public void Configure(IApplicationBuilder app)
+        {
+          //insert right before UseStaticFiles();
+          app.UseWebOptimizer();
+          app.UseStaticFiles();
+        }
+      }</code></pre>
+      <h3>AddBundleAndMinify()</h3>
+      <pre><code>
+      namespace MyMiddleware
+      {
+        public static class ServiceCollectionExtenrions
+        {
+          public static IServiceCollection AddBundleAndMinify(this IServiceCollection services, bool development)
+          {
+            services.AddWebOptimizer(pipeline =>
+            {
+              pipeline.AddJavaScriptBundle("/site.js",
+                "/js/script1.js",
+                "/js/script2.js",
+                "/js/script3.js");
+      
+              //omit the .scss extension. The order of the files will be preserved.
+              string[] files = {
+                "/sass/base",
+                "/sass/colors"
+              };
+      
+              pipeline.AddScssBundle("/site.css", files.Select(file => file + ".scss").ToArray());
+                      
+              //In development, create a css-bundle for each scss file. 
+              if (development)
+              {
+                var option = new Sass.WebOptimazerScssOptions() { MinifyCss = false };
+                files.ToList().ForEach(file => {
+                  pipeline.AddScssBundle(option, file + ".css", file + ".scss");
+                });
+              }
+      
+            });
+      
+            return services;
+          }
+        }
+      }
+      </code></pre>
+      <h3>_ViewImports.cshtml</h3>
+      <p>
+      Include these lines to get access to tag helpers that comes with WebOptimizer. Tag helpers in this project are used for:
+      <ul>
+        <li>Add version number at the end of bundles. The number will change with every build and will force the browser to request the bundle again and not use the browser cache.</li>
+        <li>Create unbundled links to assets while in development mode.</li>
+      </ul>
+      </p>
+      <pre><code>
+      @using WebOptimizer
+      @addTagHelper *, WebOptimizer.Core
+      </code></pre>
+      
+      <h3>_Layout.cshtml</h3>
+      <pre><code>
+      &lt;!-- in head element --&gt;
+      &lt;link href="/site.css" rel="stylesheet" type="text/css" /&gt;
+      
+      &lt;!-- just before end of body --&gt;
+      &lt;script src="/site.js"&gt;&lt;/script&gt;
+      </code></pre>
+      
+            <h3>appsettings.Development.json</h3>
+      <ul>
+      <li> <strong>enableCaching: false</strong> will avoid setting Response-Header Cache-Control and the browser will not cache. It's needed when enableTagHelperBundling is false and the assets type is CSS where a version number is not added at the end of each .css file. </li>
+      <li> <strong>enableTagHelperBundling: false</strong> will not bundle files referenced within script or link elements. Each file in the bundle will be referenced separately.</li>
+    </ul>
+      Default values for both of these attributes are <span style='font-style: italic;'>true</span>.
+      <pre><code>
+      {
+        "webOptimizer": {
+          "enableCaching": false,
+          "enableTagHelperBundling": false
+        }
+      }
+      </code></pre>
+      
+      <h2>Compression</h2> 
+      If compression is used (services.AddResponseCompression) special care has to be taken in order to compress bundled or minified files, 
+      see <a href="https://github.com/ligershark/WebOptimizer">documentation of WebOptimizer</a>
+      .
+      
+      <h2>Links</h2>
+      <ul>
+        <li><a href="ttps://github.com/ligershark/WebOptimizer">WebOptimizer</a></li>
+        <li><a href="https://docs.microsoft.com/en-us/aspnet/core/client-side/bundling-and-minification?view=aspnetcore-5.0">Microsoft: about bundling-and-minification</a></li>
+        <li>A tag helper that will conditionally include markup depending on environment configuration. Not used in my solution. <a href="https://docs.microsoft.com/en-us/aspnet/core/mvc/views/tag-helpers/built-in/environment-tag-helper?view=aspnetcore-5.0)">The environment tag helper</a></li>
+      </ul>
+    </div><!-- .entry-content -->
+    </article><!-- #post-## -->
+    
