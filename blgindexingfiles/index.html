@@ -185,7 +185,17 @@ public class FindIndexFiltering : IInitializableModule
     <p>A page or a block containing a link to a file will trigger the indexing callback and cause the file to be indexed whenever the page or block is changed (saved, published etc.). However, a page or a block containing another block (e.g. via content area) with a link to a file will not trigger the indexing event of the file when changed. In order to have the file indexed in such a scenario, the block linking to the file, or the file itself (necessary if it is not a page file), has to be &#8220;touched&#8221; (e.g. by checking &#8220;Update modified date&#8221;). Of course, one can always wait for the full index job to run.</p>
       </div><!-- .entry-content -->
     </article><!-- #post-## -->
-    <!-- start footer.html -->
+    
+    <div id="disqus_thread"></div>
+    <script>
+        (function() {
+        var d = document, s = d.createElement('script');
+        s.src = 'https://waernulf.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+        })();
+    </script>
+    <noscript>Please enable JavaScript to comment</noscript>        <!-- start footer.html -->
 </main><!-- #main -->
 </div><!-- #primary -->
 
