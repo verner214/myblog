@@ -44,4 +44,4 @@ about.html
   
 #my useful commands  
 se https://gnaget.z16.web.core.windows.net/view/index.html?id=59c9e7a1-93af-4ff0-a172-7658e695c3f9
-eller sök git.
+eller sök git i wiki.
