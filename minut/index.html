@@ -30,7 +30,7 @@ function press() {
     return;
   }
   
-  var total = 60 - (Date.now() - millis) / 1000;
+  var total = 30 - (Date.now() - millis) / 1000;
   text.innerHTML = "Anteckna tiden kvar till en minut: " + total;
   //btn.innerHTML = 'Start';
   started = false;
