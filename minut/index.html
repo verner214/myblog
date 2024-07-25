@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+  </head>
+<style>
+* {
+  font-size: 8vw;
+}
+button {
+  display: block;
+  width: 100%;
+  border: 5px solid;
+  background: green;
+  color: black;
+}
+</style>
+
+<script>
+var started = false;
+var millis;
+
+function press() {
+  if (!started) {
+    btn.innerHTML = 'STOPP';
+    btn.style = 'background: red';
+    started = true;
+    millis = Date.now();
+    setTimeout(() => tolate(), 30000)
+    return;
+  }
+  
+  var total = 60 - (Date.now() - millis) / 1000;
+  text.innerHTML = "Anteckna tiden kvar till en minut: " + total;
+  //btn.innerHTML = 'Start';
+  started = false;
+  btn.style = 'display: none';
+}
+
+function tolate() {
+  if (started) {
+    bodyid.innerHTML = 'FÖR SENT!! TIDEN ÄR UTE!!';
+    bodyid.style = 'background: red';
+  }
+}
+</script>
+
+  <body id='bodyid'>
+    <div id="text">Tryck på knappen för att starta tiden. 
+      Tryck på knappen igen innan en minut  passerat men så nära en minut som möjligt. 
+      Om en minut passeras ges inga poäng. Klocka får inte användas.
+    </div>
+    <button id="btn" onclick="press()">Start</button>  
+  </body>
+</html>
